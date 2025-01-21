@@ -64,7 +64,7 @@ Google Chrome で以下のリンクをクリックし、拡張機能「User Java
 
 ### 4️⃣ **スクリプトを入力**
 
-設定画面の **「Start typing JavaScript here」** 欄に、プロジェクトの `script.js` ファイルの内容をコピー＆ペーストします。
+設定画面の **「Start typing JavaScript here」** 欄に、プロジェクトの [`script.js`](https://github.com/s27x4/ExamDojoHelper/blob/main/script.js) ファイルの内容をコピー＆ペーストします。
 
 ---
 
