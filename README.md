@@ -16,6 +16,8 @@
 | `4`        | 選択肢「エ」を選択                                                  |
 | `Enter`    | 次の問題に進む                                                      |
 | `Backspace`| 前のページに戻る                                                    |
+| `Shift`    | キー対応表を表示                                                    |
+| `Shift` + `k`| 対応するキーを変更                                                    |
 
 ✅ **視覚的な補助機能**  
 - `Shift`キーを押すと画面右下に操作ガイドを表示します。  
@@ -53,12 +55,7 @@ Google Chrome で以下のリンクをクリックし、拡張機能「User Java
 ### 3️⃣ **URL パターンを設定**
 
 以下の URL パターンを登録してください：
-
-- **基本情報技術者試験の場合**\
-  `https://www.fe-siken.com/*`
-
-- **応用情報技術者試験の場合**\
-  `https://www.ap-siken.com/*`
+`https://www.fe-siken.com/*,https://www.ap-siken.com/*`
 
 ---
 
