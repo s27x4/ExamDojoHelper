@@ -1,11 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-	initializeStyles();
-	const keyInfoOverlay = createKeyInfoOverlay();
-	document.body.appendChild(keyInfoOverlay);
-	initializeKeyActions(keyInfoOverlay);
-});
-
-function initializeStyles() {
 	const styleSheet = document.createElement('style');
 	styleSheet.textContent = `
         @keyframes pulse {
@@ -84,9 +77,7 @@ function initializeStyles() {
         }
     `;
 	document.head.appendChild(styleSheet);
-}
 
-function createKeyInfoOverlay() {
 	const keyInfoOverlay = document.createElement('div');
 	keyInfoOverlay.id = 'keyInfoOverlay';
 	Object.assign(keyInfoOverlay.style, {
@@ -110,6 +101,30 @@ function createKeyInfoOverlay() {
 		transform: 'translateY(20px) scale(0.98)',
 		opacity: '0',
 	});
+
+	const getActionIcon = (type) => {
+		const iconColors = {
+			select: '#00d1ff',
+			next: '#00fff2',
+			back: '#00d1ff',
+		};
+		const iconStyles = `stroke: ${iconColors[type]}; stroke-width: 2.5;`;
+
+		switch (type) {
+			case 'select':
+				return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="${iconStyles}">
+                    <path d="M20 6L9 17L4 12" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>`;
+			case 'next':
+				return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="${iconStyles}">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>`;
+			case 'back':
+				return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="${iconStyles}">
+                    <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>`;
+		}
+	};
 
 	keyInfoOverlay.innerHTML = `
         <div>
@@ -155,10 +170,51 @@ function createKeyInfoOverlay() {
             </div>
         </div>
     `;
-	return keyInfoOverlay;
-}
 
-function initializeKeyActions(keyInfoOverlay) {
+	document.body.appendChild(keyInfoOverlay);
+	function keys_update(actions) {
+		const keys = document.getElementById('keys');
+		keys.innerHTML = actions
+			.map(
+				(item) => `
+        <div class="key-button">
+          <span style="font-weight: 600; min-width: 80px;">${item[0]}</span>
+        </div>
+        <div class="action-text">
+          <div class="action-icon">
+            ${getActionIcon(item[2])}
+          </div>
+          <span style="opacity: 0.9;">${action_replace(item[1])}</span>
+        </div>
+      `
+			)
+			.join('');
+	}
+	
+	function action_replace(action) {
+		switch (action) {
+				case 'select1':
+					return 'アを選択';
+					break;
+				case 'select2':
+					return 'イを選択';
+					break;
+				case 'select3':
+					return 'ウを選択';
+					break;
+				case 'select4':
+					return 'エを選択';
+					break;
+				case 'next':
+					return '次の問題';
+					break;
+				case 'back':
+					return '前のページ';
+					break;
+			}
+	}
+
+	// 初期キー設定
 	const defaultKeyMap = [
 		['1', 'select1', 'select'],
 		['2', 'select2', 'select'],
@@ -168,55 +224,122 @@ function initializeKeyActions(keyInfoOverlay) {
 		['Backspace', 'back', 'back'],
 	];
 
+	// キー設定の読み込み
 	let keyMap = JSON.parse(localStorage.getItem('keyMap')) || defaultKeyMap;
+	keys_update(keyMap);
 
-	function keysUpdate(actions) {
-		const keys = document.getElementById('keys');
-		keys.innerHTML = actions
-			.map(
-				(item) =>
-					`<div class="key-button">
-                <span style="font-weight: 600; min-width: 80px;">${item[0]}</span>
-            </div>
-            <div class="action-text">
-                <div class="action-icon">${getActionIcon(item[2])}</div>
-                <span style="opacity: 0.9;">${actionReplace(item[1])}</span>
-            </div>`
-			)
-			.join('');
-	}
+	// 設定モードの状態
+	let isSettingKey = false;
+	let currentKeyToSet = null;
 
-	function getActionIcon(type) {
-		const iconColors = { select: '#00d1ff', next: '#00fff2', back: '#00d1ff' };
-		const iconStyles = `stroke: ${iconColors[type]}; stroke-width: 2.5;`;
-		switch (type) {
-			case 'select':
-				return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="${iconStyles}">
-                    <path d="M20 6L9 17L4 12" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>`;
-			case 'next':
-				return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="${iconStyles}">
-                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>`;
-			case 'back':
-				return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="${iconStyles}">
-                    <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>`;
+	// キーイベントの処理
+	let isShiftPressed = false;
+
+	document.addEventListener('keydown', function (event) {
+		const buttons = document.querySelectorAll('.selectList .selectBtn');
+		const submitButton = document.querySelector('button.submit');
+
+		if (event.key === 'Shift' && !isShiftPressed) {
+			isShiftPressed = true;
+			keyInfoOverlay.style.display = 'block';
+			requestAnimationFrame(() => {
+				keyInfoOverlay.style.transform = 'translateY(0) scale(1)';
+				keyInfoOverlay.style.opacity = '1';
+			});
 		}
-	}
 
-	function actionReplace(action) {
-		const actionsMap = {
-			select1: 'アを選択',
-			select2: 'イを選択',
-			select3: 'ウを選択',
-			select4: 'エを選択',
-			next: '次の問題',
-			back: '前のページ',
-		};
-		return actionsMap[action] || '';
-	}
+		if (event.key === 'Backspace' && isShiftPressed && isSettingKey) {
+			isSettingKey = false;
+			alert('キー設定モードを中止しました。');
+			return;
+		}
 
-	keysUpdate(keyMap);
-}
+		if (event.key === 'Shift' && isSettingKey) {
+			return;
+		}
 
+		if (isSettingKey) {
+			// 設定モード時の処理
+			if (!currentKeyToSet) {
+				const existingKey = keyMap.find((item) => item[0] === event.key);
+				if (existingKey) {
+					currentKeyToSet = event.key;
+					alert(
+						`キー ${event.key} を設定対象として選択しました。次に新しいキーを押してください。`
+					);
+				} else {
+					alert('無効なキーです。もう一度設定対象のキーを押してください。');
+				}
+			} else {
+				// 新しいキーを設定
+				const existingKey = keyMap.find((item) => item[0] === event.key);
+				if (existingKey) {
+					alert(
+						`キー ${event.key} は既に使用されています。他のキーを選択してください。`
+					);
+				} else {
+					const updatedKeyMap = keyMap.map((item) => {
+						if (item[0] === currentKeyToSet) {
+							return [event.key, item[1], item[2]]; // 現在のキーをevent.keyに変更
+						}
+						return item; // それ以外はそのまま
+					});
+
+					// アラート表示
+					alert(`キー設定が更新されました: ${currentKeyToSet} → ${event.key}`);
+
+					// 状態のリセット
+					currentKeyToSet = null;
+					isSettingKey = false;
+
+					// キー設定を更新
+					keyMap = updatedKeyMap;
+					localStorage.setItem('keyMap', JSON.stringify(updatedKeyMap));
+					keys_update(updatedKeyMap);
+				}
+			}
+			return;
+		}
+
+		// 通常のキー操作
+		const action = keyMap.find((item) => item[0] === event.key)?.[1];
+		if (action) {
+			switch (action) {
+				case 'select1':
+					buttons[0]?.click();
+					break;
+				case 'select2':
+					buttons[1]?.click();
+					break;
+				case 'select3':
+					buttons[2]?.click();
+					break;
+				case 'select4':
+					buttons[3]?.click();
+					break;
+				case 'next':
+					submitButton?.click();
+					break;
+				case 'back':
+					history.back();
+					break;
+			}
+		}
+	});
+
+	// 設定モードへの移行
+	document.addEventListener('keyup', function (event) {
+		if (event.key === 'Shift') {
+			isShiftPressed = false;
+			keyInfoOverlay.style.transform = 'translateY(20px) scale(0.98)';
+			keyInfoOverlay.style.opacity = '0';
+			setTimeout(() => {
+				if (!isShiftPressed) keyInfoOverlay.style.display = 'none';
+			}, 400);
+		} else if (event.key === 'K') {
+			// Kキーで設定モード開始
+			isSettingKey = true;
+			alert('キー設定モードを開始しました。変更するキーを選んでください。');
+		}
+	});
+});
